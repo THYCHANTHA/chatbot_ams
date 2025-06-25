@@ -78,7 +78,8 @@ def load_student_data():
 
 student_df = load_student_data()
 
-# Extract text from PDF
+st.write("Files in current directory:", os.listdir())
+
 @st.cache_data
 def load_pdf_text(pdf_path):
     try:
@@ -96,11 +97,10 @@ def load_pdf_text(pdf_path):
     except Exception as e:
         st.error(f"Error reading PDF {pdf_path}: {e}")
         return ""
-pdf_text = load_pdf_text("THY Chantha CV.pdf")
 
-pdf_text = load_pdf_text("THY_Chantha_CV.pdf")
-pdf_text2 = load_pdf_text("San_Kimheang_CV.pdf")
-pdf_text3 = load_pdf_text("ROEUN_SOVANDETH.pdf")
+pdf_text = load_pdf_text("THY Chantha CV.pdf")   # Use your exact filename here
+pdf_text2 = load_pdf_text("San Kimheang_CV.pdf")
+pdf_text3 = load_pdf_text("ROEUN SOVANDETH.pdf")
 
 # Split text into chunks
 def chunk_text(text, chunk_size=500):
