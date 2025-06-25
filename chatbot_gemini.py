@@ -54,32 +54,25 @@ st.markdown(
 # Load and clean student data
 @st.cache_data
 def load_student_data():
-    cols = ['student_id', 'first_name', 'middle_name', 'last_name', 'gender', 'group', 'semester', 'year', 'academic year', 'email']
     try:
         df = pd.read_csv('students.csv')
         df.columns = [col.strip().replace('\ufeff', '') for col in df.columns]
         df.dropna(subset=['student_id', 'first_name', 'last_name'], inplace=True)
+        cols = ['student_id', 'first_name', 'middle_name', 'last_name', 'gender', 'group', 'semester', 'year', 'academic year', 'email']
         for col in cols:
-            if col not in df.columns:
-                df[col] = ''
             df[col] = df[col].fillna('').astype(str)
         df['combined'] = df[cols].agg(' '.join, axis=1)
         return df
     except FileNotFoundError:
         st.error("students.csv file not found.")
-        empty_df = pd.DataFrame(columns=cols)
-        empty_df['combined'] = ''
-        return empty_df
+        return pd.DataFrame()
     except Exception as e:
         st.error(f"Error loading student data: {e}")
-        empty_df = pd.DataFrame(columns=cols)
-        empty_df['combined'] = ''
-        return empty_df
+        return pd.DataFrame()
 
 student_df = load_student_data()
 
-st.write("Files in current directory:", os.listdir())
-
+# Extract text from PDF
 @st.cache_data
 def load_pdf_text(pdf_path):
     try:
@@ -98,9 +91,9 @@ def load_pdf_text(pdf_path):
         st.error(f"Error reading PDF {pdf_path}: {e}")
         return ""
 
-pdf_text = load_pdf_text("THY_Chantha_CV.pdf")   # Updated filename
-pdf_text2 = load_pdf_text("San_Kimheang_CV.pdf") # Updated filename
-pdf_text3 = load_pdf_text("ROEUN_SOVANDETH.pdf") # Updated filename
+pdf_text = load_pdf_text("THY_Chantha_CV.pdf")
+pdf_text2 = load_pdf_text("San_Kimheang_CV.pdf")
+pdf_text3 = load_pdf_text("ROEUN_SOVANDETH.pdf")
 
 # Split text into chunks
 def chunk_text(text, chunk_size=500):
@@ -120,21 +113,10 @@ def create_tfidf_matrix(texts):
     tfidf_matrix = vectorizer.transform(texts)
     return vectorizer, tfidf_matrix
 
-if 'combined' in student_df.columns and not student_df['combined'].empty:
-    combined_texts = list(student_df['combined'])
-else:
-    combined_texts = []
-
-combined_texts += pdf_chunks
-
-if combined_texts:
-    vectorizer, tfidf_matrix = create_tfidf_matrix(combined_texts)
-else:
-    vectorizer, tfidf_matrix = None, None
+combined_texts = list(student_df['combined']) + pdf_chunks
+vectorizer, tfidf_matrix = create_tfidf_matrix(combined_texts)
 
 def find_relevant_texts(query, vectorizer, tfidf_matrix, texts, top_n=5, similarity_threshold=0.1):
-    if vectorizer is None or tfidf_matrix is None:
-        return []
     query_vec = vectorizer.transform([query])
     similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
     filtered_indices = [i for i, sim in enumerate(similarities) if sim >= similarity_threshold]
@@ -253,7 +235,8 @@ if st.button("Send"):
             log_evaluation(prompt, response_text)
         else:
             try:
-                if prompt.strip().lower() in ["list all students", "list all student", "show all students", "show all student"]:
+                lower_prompt = prompt.strip().lower()
+                if lower_prompt in ["list all students", "list all student", "show all students", "show all student"]:
                     if student_df.empty:
                         st.info("No student data available.")
                         log_evaluation(prompt, "No student data available.")
@@ -264,7 +247,7 @@ if st.button("Send"):
                         st.markdown(f"### Student List\n\n{markdown_table}")
                         st.session_state.chat_history.append({"role": "bot", "content": f"### Student List\n\n{markdown_table}"})
                         log_evaluation(prompt, "Displayed student list.")
-                elif prompt.strip().lower() in ["list all instructors", "list all instructor", "show all instructors", "show all instructor"]:
+                elif lower_prompt in ["list all instructors", "list all instructor", "show all instructors", "show all instructor"]:
                     try:
                         instructor_df = load_instructor_data()
                         if instructor_df.empty:
@@ -302,9 +285,12 @@ if st.button("Send"):
                             st.session_state.chat_history.append({"role": "bot", "content": f"### Students matching filters\n\n{response_text}"})
                             log_evaluation(prompt, f"Displayed students matching filters with sentences.")
                         else:
+                            st.info("No students found matching the filters.")
+                            st.session_state.chat_history.append({"role": "bot", "content": "No students found matching the filters."})
                             log_evaluation(prompt, "No students found matching the filters.")
                     else:
-                        if len(prompt.strip().split()) == 1:
+                        # Only proceed with name fuzzy search if prompt is longer than 1 character and is not just spaces
+                        if len(prompt.strip().split()) == 1 and len(prompt.strip()) > 1:
                             name = prompt.strip()
                             matched_students, matched_instructors = search_by_name_fuzzy(name)
                             if not matched_students.empty:
@@ -348,9 +334,11 @@ if st.button("Send"):
                                 st.session_state.chat_history.append({"role": "bot", "content": f"### Instructors matching name '{name}'\n\n{response_text}"})
                                 log_evaluation(prompt, f"Displayed instructors matching name '{name}' with sentences.")
                             else:
-                                log_evaluation(prompt, f"No matches for name '{name}'.")
+                                # Do not show "No students or instructors found matching..." for short or invalid inputs
+                                pass
                         else:
-                            log_evaluation(prompt, "No matches for prompt.")
+                            # For multi-word or empty inputs, don't show any no-match info message
+                            pass
 
                         relevant_texts = find_relevant_texts(prompt, vectorizer, tfidf_matrix, combined_texts)
                         if not relevant_texts:
