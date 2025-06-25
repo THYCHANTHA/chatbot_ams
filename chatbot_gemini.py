@@ -302,9 +302,6 @@ if st.button("Send"):
                             st.session_state.chat_history.append({"role": "bot", "content": f"### Students matching filters\n\n{response_text}"})
                             log_evaluation(prompt, f"Displayed students matching filters with sentences.")
                         else:
-                            # Removed the "No students found matching..." message as requested
-                            # st.info("No students found matching the filters.")
-                            # st.session_state.chat_history.append({"role": "bot", "content": "No students found matching the filters."})
                             log_evaluation(prompt, "No students found matching the filters.")
                     else:
                         if len(prompt.strip().split()) == 1:
@@ -351,14 +348,8 @@ if st.button("Send"):
                                 st.session_state.chat_history.append({"role": "bot", "content": f"### Instructors matching name '{name}'\n\n{response_text}"})
                                 log_evaluation(prompt, f"Displayed instructors matching name '{name}' with sentences.")
                             else:
-                                # Removed the message below as requested
-                                # st.info(f"No students or instructors found matching '{name}'.")
-                                # st.session_state.chat_history.append({"role": "bot", "content": f"No students or instructors found matching '{name}'."})
                                 log_evaluation(prompt, f"No matches for name '{name}'.")
                         else:
-                            # Removed the message below as requested
-                            # st.info("No students or instructors found matching the prompt.")
-                            # st.session_state.chat_history.append({"role": "bot", "content": "No students or instructors found matching the prompt."})
                             log_evaluation(prompt, "No matches for prompt.")
 
                         relevant_texts = find_relevant_texts(prompt, vectorizer, tfidf_matrix, combined_texts)
