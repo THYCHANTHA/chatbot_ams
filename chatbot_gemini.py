@@ -17,10 +17,6 @@ genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
 st.set_page_config(page_title="AMS Chatbot", layout="wide")
 st.title("AMS Chatbot")
 
-# --- Debug: List files in current directory ---
-st.write("Current working directory:", os.getcwd())
-files_in_dir = os.listdir()
-st.write("Files in directory:", files_in_dir)
 
 required_files = [
     "students.csv",
