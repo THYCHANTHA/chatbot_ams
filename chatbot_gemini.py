@@ -96,6 +96,7 @@ def load_pdf_text(pdf_path):
     except Exception as e:
         st.error(f"Error reading PDF {pdf_path}: {e}")
         return ""
+pdf_text = load_pdf_text("THY Chantha CV.pdf")
 
 pdf_text = load_pdf_text("THY_Chantha_CV.pdf")
 pdf_text2 = load_pdf_text("San_Kimheang_CV.pdf")
