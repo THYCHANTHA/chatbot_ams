@@ -51,7 +51,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load and clean student data
 @st.cache_data
 def load_student_data():
     try:
@@ -71,7 +70,6 @@ def load_student_data():
         return pd.DataFrame()
 
 student_df = load_student_data()
-
 # Extract text from PDF
 @st.cache_data
 def load_pdf_text(pdf_path):
