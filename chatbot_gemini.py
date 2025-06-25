@@ -91,9 +91,9 @@ def load_pdf_text(pdf_path):
         st.error(f"Error reading PDF {pdf_path}: {e}")
         return ""
 
-pdf_text = load_pdf_text("THY Chantha CV.pdf")
-pdf_text2 = load_pdf_text("San Kimheang_CV.pdf")
-pdf_text3 = load_pdf_text("ROEUN SOVANDETH.pdf")
+pdf_text = load_pdf_text("THY_Chantha_CV.pdf")
+pdf_text2 = load_pdf_text("San_Kimheang_CV.pdf")
+pdf_text3 = load_pdf_text("ROEUN_SOVANDETH.pdf")
 
 # Split text into chunks
 def chunk_text(text, chunk_size=500):
